@@ -731,7 +731,7 @@ async function handleSetVerificationStatus({ userId, status }) {
 
     // 3. Формируем текст сообщения и ссылку для Web App
     let messageText = '';
-    const botUsername = 'bikepark54bot'; // <-- УКАЖИТЕ ИМЯ ВАШЕГО БОТА
+    const botUsername = 'bikeparkk_54_bot'; // <-- УКАЖИТЕ ИМЯ ВАШЕГО БОТА
     const webAppName = 'app'; // <-- УКАЖИТЕ КОРОТКОЕ ИМЯ ВАШЕГО WEB APP
     const webAppUrl = `https://t.me/${botUsername}/${webAppName}`;
 
