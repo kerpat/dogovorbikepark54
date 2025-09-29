@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  bikepark54server:
+    build: .
+    ports:
+      - "10000:10000"
+    environment:
+      - SUPABASE_URL=https://your-supabase-url.supabase.co
+      - SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+      - TELEGRAM_BOT_TOKEN=your_bot_token
+      - PORT=10000
+    restart: unless-stopped
