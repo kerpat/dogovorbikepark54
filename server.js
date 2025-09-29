@@ -5,16 +5,15 @@ const fetch = require('node-fetch');
 const playwright = require('playwright');
 
 const app = express();
-const port = process.env.PORT || 10000;
+const port = 10000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 function createSupabaseAdmin() {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        throw new Error('Supabase service credentials are not configured.');
-    }
-    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const SUPABASE_URL = 'https://gbabrtcnegjhherbczuj.supabase.co';
+    const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiYWJydGNuZWdqaGhlcmJjenVqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTEzNDQxMCwiZXhwIjoyMDc0NzEwNDEwfQ.UEsU_2fIR-K0UgeZecggsKuUM4WgwRNgm40cu8i4UGk';
+    return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 }
 
 function parseRequestBody(body) {
@@ -29,7 +28,7 @@ function parseRequestBody(body) {
     }
     return body;
 }
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN; // Загружаем токен из переменных окружения
+const BOT_TOKEN = '8277257856:AAG1-cSCEawx_J3kQk0RmbCH3pNndQ7wOjE'; // Захардкоженный токен бота
 
 /**
  * Отправляет уведомление в Telegram с кнопкой-ссылкой на Web App.
