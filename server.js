@@ -468,12 +468,19 @@ async function handleGenerateReturnAct({ userId, rentalId }) {
         const { data: rentalData, error: rentalError } = await supabaseAdmin
             .from('rentals')
             // ИЗМЕНЕНИЕ: Добавляем recognized_passport_data в запрос
-            .select('extra_data, clients ( name, city, recognized_passport_data ), bikes ( * )')
+            .select('id, extra_data, user_id, bike_id, clients!rentals_user_id_fkey ( name, city, recognized_passport_data ), bikes!rentals_bike_id_fkey ( * )')
             .eq('id', rentalId)
             .eq('user_id', userId)
             .single();
 
-        if (rentalError) throw new Error('Failed to fetch rental data for Act: ' + rentalError.message);
+        if (rentalError) {
+            console.error('Rental fetch error:', rentalError);
+            throw new Error('Failed to fetch rental data for Act: ' + rentalError.message);
+        }
+
+        if (!rentalData) {
+            throw new Error('Rental not found');
+        }
 
         const defects = rentalData.extra_data?.defects || [];
         const amount = rentalData.extra_data?.damage_amount || 0;
@@ -522,12 +529,19 @@ async function handleConfirmReturnAct({ userId, rentalId, signatureData }) {
         const { data: rentalData, error: rentalError } = await supabaseAdmin
             .from('rentals')
             // ИЗМЕНЕНИЕ 1: Добавляем bike_id и recognized_passport_data в запрос
-            .select('bike_id, extra_data, clients ( name, city, recognized_passport_data ), bikes ( * )')
+            .select('id, bike_id, extra_data, user_id, clients!rentals_user_id_fkey ( name, city, recognized_passport_data ), bikes!rentals_bike_id_fkey ( * )')
             .eq('id', rentalId)
             .eq('user_id', userId)
             .single();
 
-        if (rentalError) throw new Error('Failed to fetch rental data for Return Act signing: ' + rentalError.message);
+        if (rentalError) {
+            console.error('Rental fetch error for signing:', rentalError);
+            throw new Error('Failed to fetch rental data for Return Act signing: ' + rentalError.message);
+        }
+
+        if (!rentalData) {
+            throw new Error('Rental not found');
+        }
 
         const defects = rentalData.extra_data?.defects || [];
         const amount = rentalData.extra_data?.damage_amount || 0;
