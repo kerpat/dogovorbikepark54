@@ -465,10 +465,10 @@ async function handleGenerateReturnAct({ userId, rentalId }) {
     let browser = null;
 
     try {
-        const { data: rentalData, error: rentalError } = await supabaseAdmin
+        // Шаг 1: Получаем данные аренды
+        const { data: rental, error: rentalError } = await supabaseAdmin
             .from('rentals')
-            // ИЗМЕНЕНИЕ: Добавляем recognized_passport_data в запрос
-            .select('id, extra_data, user_id, bike_id, clients!rentals_user_id_fkey ( name, city, recognized_passport_data ), bikes!rentals_bike_id_fkey ( * )')
+            .select('id, extra_data, user_id, bike_id')
             .eq('id', rentalId)
             .eq('user_id', userId)
             .single();
@@ -478,12 +478,43 @@ async function handleGenerateReturnAct({ userId, rentalId }) {
             throw new Error('Failed to fetch rental data for Act: ' + rentalError.message);
         }
 
-        if (!rentalData) {
+        if (!rental) {
             throw new Error('Rental not found');
         }
 
-        const defects = rentalData.extra_data?.defects || [];
-        const amount = rentalData.extra_data?.damage_amount || 0;
+        // Шаг 2: Получаем данные клиента
+        const { data: client, error: clientError } = await supabaseAdmin
+            .from('clients')
+            .select('name, city, recognized_passport_data')
+            .eq('id', rental.user_id)
+            .single();
+
+        if (clientError) {
+            console.error('Client fetch error:', clientError);
+            throw new Error('Failed to fetch client data: ' + clientError.message);
+        }
+
+        // Шаг 3: Получаем данные велосипеда
+        const { data: bike, error: bikeError } = await supabaseAdmin
+            .from('bikes')
+            .select('*')
+            .eq('id', rental.bike_id)
+            .single();
+
+        if (bikeError) {
+            console.error('Bike fetch error:', bikeError);
+            throw new Error('Failed to fetch bike data: ' + bikeError.message);
+        }
+
+        // Собираем данные в нужной структуре
+        const rentalData = {
+            ...rental,
+            clients: client,
+            bikes: bike
+        };
+
+        const defects = rental.extra_data?.defects || [];
+        const amount = rental.extra_data?.damage_amount || 0;
 
         const fullHTML = generateReturnActHTML(rentalData, defects, null, amount);
 
@@ -526,10 +557,10 @@ async function handleConfirmReturnAct({ userId, rentalId, signatureData }) {
     let browser = null;
 
     try {
-        const { data: rentalData, error: rentalError } = await supabaseAdmin
+        // Шаг 1: Получаем данные аренды
+        const { data: rental, error: rentalError } = await supabaseAdmin
             .from('rentals')
-            // ИЗМЕНЕНИЕ 1: Добавляем bike_id и recognized_passport_data в запрос
-            .select('id, bike_id, extra_data, user_id, clients!rentals_user_id_fkey ( name, city, recognized_passport_data ), bikes!rentals_bike_id_fkey ( * )')
+            .select('id, extra_data, user_id, bike_id')
             .eq('id', rentalId)
             .eq('user_id', userId)
             .single();
@@ -539,12 +570,43 @@ async function handleConfirmReturnAct({ userId, rentalId, signatureData }) {
             throw new Error('Failed to fetch rental data for Return Act signing: ' + rentalError.message);
         }
 
-        if (!rentalData) {
+        if (!rental) {
             throw new Error('Rental not found');
         }
 
-        const defects = rentalData.extra_data?.defects || [];
-        const amount = rentalData.extra_data?.damage_amount || 0;
+        // Шаг 2: Получаем данные клиента
+        const { data: client, error: clientError } = await supabaseAdmin
+            .from('clients')
+            .select('name, city, recognized_passport_data')
+            .eq('id', rental.user_id)
+            .single();
+
+        if (clientError) {
+            console.error('Client fetch error:', clientError);
+            throw new Error('Failed to fetch client data: ' + clientError.message);
+        }
+
+        // Шаг 3: Получаем данные велосипеда
+        const { data: bike, error: bikeError } = await supabaseAdmin
+            .from('bikes')
+            .select('*')
+            .eq('id', rental.bike_id)
+            .single();
+
+        if (bikeError) {
+            console.error('Bike fetch error:', bikeError);
+            throw new Error('Failed to fetch bike data: ' + bikeError.message);
+        }
+
+        // Собираем данные в нужной структуре
+        const rentalData = {
+            ...rental,
+            clients: client,
+            bikes: bike
+        };
+
+        const defects = rental.extra_data?.defects || [];
+        const amount = rental.extra_data?.damage_amount || 0;
 
         const fullHTML = generateReturnActHTML(rentalData, defects, signatureData, amount);
 
